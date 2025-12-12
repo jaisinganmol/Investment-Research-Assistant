@@ -1,0 +1,198 @@
+<html>
+<head>
+<title>rag.ipynb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #bcbec4;}
+.s1 { color: #7a7e85;}
+.s2 { color: #cf8e6d;}
+.s3 { color: #bcbec4;}
+.s4 { color: #6aab73;}
+.s5 { color: #5f826b; font-style: italic;}
+.s6 { color: #2aacb8;}
+.ls0 { height: 1px; border-width: 0; color: #43454a; background-color:#43454a}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+rag.ipynb</font>
+</center></td></tr></table>
+<pre><span class="s0">#%% 
+</span><span class="s1"># Data Ingestion</span>
+
+<span class="s2">import </span><span class="s0">os</span>
+
+<span class="s2">from </span><span class="s0">dotenv </span><span class="s2">import </span><span class="s0">load_dotenv</span>
+
+<span class="s0">load_dotenv</span><span class="s3">()</span>
+
+<span class="s1"># Read your API key</span>
+<span class="s0">api_key </span><span class="s3">= </span><span class="s0">os</span><span class="s3">.</span><span class="s0">getenv</span><span class="s3">(</span><span class="s4">&quot;OPENAI_API_KEY&quot;</span><span class="s3">)</span>
+<span class="s2">if not </span><span class="s0">api_key</span><span class="s3">:</span>
+    <span class="s2">raise </span><span class="s0">ValueError</span><span class="s3">(</span><span class="s4">&quot;OPENAI_API_KEY not found in environment variables!&quot;</span><span class="s3">)</span>
+<hr class="ls0"><span class="s0">#%% 
+</span><span class="s2">from </span><span class="s0">sentence_transformers </span><span class="s2">import </span><span class="s0">SentenceTransformer</span>
+
+<span class="s1"># Load HF embedding model</span>
+<span class="s0">embedding_model </span><span class="s3">= </span><span class="s0">SentenceTransformer</span><span class="s3">(</span><span class="s4">'BAAI/bge-large-en-v1.5'</span><span class="s3">)</span>
+<span class="s0">print</span><span class="s3">(</span><span class="s4">f&quot;✓ Loaded embedding model: BAAI/bge-large-en-v1.5&quot;</span><span class="s3">)</span>
+
+<span class="s2">def </span><span class="s0">get_embedding</span><span class="s3">(</span><span class="s0">text</span><span class="s3">, </span><span class="s0">input_type</span><span class="s3">=</span><span class="s4">&quot;document&quot;</span><span class="s3">):</span>
+    <span class="s5">&quot;&quot;&quot;Generate embeddings using Hugging Face model&quot;&quot;&quot;</span>
+    <span class="s0">embedding </span><span class="s3">= </span><span class="s0">embedding_model</span><span class="s3">.</span><span class="s0">encode</span><span class="s3">(</span><span class="s0">text</span><span class="s3">, </span><span class="s0">convert_to_tensor</span><span class="s3">=</span><span class="s2">False</span><span class="s3">)</span>
+    <span class="s2">return </span><span class="s0">embedding</span><span class="s3">.</span><span class="s0">tolist</span><span class="s3">()</span><hr class="ls0"><span class="s0">#%% 
+embeddings </span><span class="s3">= </span><span class="s0">get_embedding</span><span class="s3">(</span><span class="s4">&quot;AI TECHNOLOGY&quot;</span><span class="s3">)</span>
+<span class="s0">print</span><span class="s3">(</span><span class="s0">embeddings</span><span class="s3">)</span><hr class="ls0"><span class="s0">#%% 
+</span>
+<span class="s1">## PyMuPDFLoader --&gt; points to html</span>
+
+<span class="s1"># load the pdf, and split it</span>
+<span class="s2">from </span><span class="s0">langchain_community</span><span class="s3">.</span><span class="s0">document_loaders </span><span class="s2">import </span><span class="s0">PyPDFLoader</span>
+<span class="s2">from </span><span class="s0">langchain_text_splitters </span><span class="s2">import </span><span class="s0">RecursiveCharacterTextSplitter</span>
+
+<span class="s1"># load</span>
+<span class="s0">loader </span><span class="s3">= </span><span class="s0">PyPDFLoader</span><span class="s3">(</span><span class="s4">&quot;https://www.fidelity.com/bin-public/060_www_fidelity_com/documents/about-fidelity/2024-Fidelity-Investments-Annual-Report.pdf&quot;</span><span class="s3">)</span>
+<span class="s0">data </span><span class="s3">= </span><span class="s0">loader</span><span class="s3">.</span><span class="s0">load</span><span class="s3">()</span>
+
+<span class="s1"># split</span>
+<span class="s0">text_splitter </span><span class="s3">= </span><span class="s0">RecursiveCharacterTextSplitter</span><span class="s3">(</span><span class="s0">chunk_size</span><span class="s3">=</span><span class="s6">400</span><span class="s3">, </span><span class="s0">chunk_overlap</span><span class="s3">=</span><span class="s6">20</span><span class="s3">)</span>
+<span class="s0">documents </span><span class="s3">= </span><span class="s0">text_splitter</span><span class="s3">.</span><span class="s0">split_documents</span><span class="s3">(</span><span class="s0">data</span><span class="s3">)</span><hr class="ls0"><span class="s0">#%% 
+documents</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s1">## DOCS to prepare for insertions</span>
+
+<span class="s0">docs_to_insert </span><span class="s3">= [{</span>
+    <span class="s4">&quot;text&quot;  </span><span class="s3">: </span><span class="s0">doc</span><span class="s3">.</span><span class="s0">page_content</span><span class="s3">,</span>
+    <span class="s4">&quot;embedding&quot; </span><span class="s3">: </span><span class="s0">get_embedding</span><span class="s3">(</span><span class="s0">doc</span><span class="s3">.</span><span class="s0">page_content</span><span class="s3">)</span>
+<span class="s3">} </span><span class="s2">for </span><span class="s0">doc </span><span class="s2">in </span><span class="s0">documents</span><span class="s3">]</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s1"># Print the text of the first 5 documents in the final list</span>
+<span class="s2">for </span><span class="s0">i</span><span class="s3">, </span><span class="s0">doc </span><span class="s2">in </span><span class="s0">enumerate</span><span class="s3">(</span><span class="s0">docs_to_insert</span><span class="s3">[:</span><span class="s6">5</span><span class="s3">]):</span>
+    <span class="s1"># Note: 'doc' is now a dictionary, not a LangChain Document object</span>
+    <span class="s0">print</span><span class="s3">(</span><span class="s4">f&quot;--- Document </span><span class="s2">{</span><span class="s0">i</span><span class="s2">} </span><span class="s4">---&quot;</span><span class="s3">)</span>
+    <span class="s0">print</span><span class="s3">(</span><span class="s0">doc</span><span class="s3">[</span><span class="s4">'text'</span><span class="s3">])</span>
+
+<span class="s1"># Check the total count</span>
+<span class="s0">print</span><span class="s3">(</span><span class="s4">f&quot;</span><span class="s2">\n</span><span class="s4">Total documents successfully inserted: </span><span class="s2">{</span><span class="s0">len</span><span class="s3">(</span><span class="s0">docs_to_insert</span><span class="s3">)</span><span class="s2">}</span><span class="s4">&quot;</span><span class="s3">)</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s2">import </span><span class="s0">chromadb</span>
+
+<span class="s1"># Define where to save the database</span>
+<span class="s0">PERSIST_DIR </span><span class="s3">= </span><span class="s4">&quot;./chroma_db_data&quot;</span>
+
+<span class="s1"># Initialize Persistent Client (this creates the database)</span>
+<span class="s0">client </span><span class="s3">= </span><span class="s0">chromadb</span><span class="s3">.</span><span class="s0">PersistentClient</span><span class="s3">(</span><span class="s0">path</span><span class="s3">=</span><span class="s0">PERSIST_DIR</span><span class="s3">)</span>
+
+<span class="s0">print</span><span class="s3">(</span><span class="s4">f&quot;✓ ChromaDB created at: </span><span class="s2">{</span><span class="s0">PERSIST_DIR</span><span class="s2">}</span><span class="s4">&quot;</span><span class="s3">)</span>
+<hr class="ls0"><span class="s0">#%% 
+collection </span><span class="s3">= </span><span class="s0">client</span><span class="s3">.</span><span class="s0">get_or_create_collection</span><span class="s3">(</span>
+    <span class="s0">name</span><span class="s3">=</span><span class="s4">&quot;ragpdf&quot;</span><span class="s3">)</span>
+
+<span class="s0">print</span><span class="s3">(</span><span class="s4">f&quot;✓ Created cluster: ragpdf&quot;</span><span class="s3">)</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s2">import </span><span class="s0">uuid</span>
+
+<span class="s0">ids </span><span class="s3">= [</span><span class="s0">str</span><span class="s3">(</span><span class="s0">uuid</span><span class="s3">.</span><span class="s0">uuid4</span><span class="s3">()) </span><span class="s2">for </span><span class="s0">_ </span><span class="s2">in </span><span class="s0">docs_to_insert</span><span class="s3">]</span>
+<span class="s0">documents </span><span class="s3">= [</span><span class="s0">doc</span><span class="s3">[</span><span class="s4">&quot;text&quot;</span><span class="s3">] </span><span class="s2">for </span><span class="s0">doc </span><span class="s2">in </span><span class="s0">docs_to_insert</span><span class="s3">]</span>
+<span class="s0">embeddings </span><span class="s3">= [</span><span class="s0">doc</span><span class="s3">[</span><span class="s4">&quot;embedding&quot;</span><span class="s3">] </span><span class="s2">for </span><span class="s0">doc </span><span class="s2">in </span><span class="s0">docs_to_insert</span><span class="s3">]</span>
+
+<span class="s1"># Insert</span>
+<span class="s0">collection</span><span class="s3">.</span><span class="s0">add</span><span class="s3">(</span>
+    <span class="s0">ids</span><span class="s3">=</span><span class="s0">ids</span><span class="s3">,</span>
+    <span class="s0">documents</span><span class="s3">=</span><span class="s0">documents</span><span class="s3">,</span>
+    <span class="s0">embeddings</span><span class="s3">=</span><span class="s0">embeddings</span>
+    <span class="s3">)</span>
+
+<span class="s0">collection</span><span class="s3">.</span><span class="s0">count</span><span class="s3">()</span>
+<span class="s0">collection</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s1">#### PHASE 2</span>
+
+
+<span class="s2">import </span><span class="s0">chromadb</span>
+<span class="s2">import </span><span class="s0">uuid</span>
+
+<span class="s1"># Connect to ChromaDB</span>
+<span class="s0">client </span><span class="s3">= </span><span class="s0">chromadb</span><span class="s3">.</span><span class="s0">PersistentClient</span><span class="s3">(</span><span class="s0">path</span><span class="s3">=</span><span class="s4">&quot;./chroma_db_data&quot;</span><span class="s3">)</span>
+
+<span class="s1"># Create collection with vector index configuration</span>
+<span class="s0">collection </span><span class="s3">= </span><span class="s0">client</span><span class="s3">.</span><span class="s0">get_or_create_collection</span><span class="s3">(</span>
+    <span class="s0">name</span><span class="s3">=</span><span class="s4">&quot;ragpdf&quot;</span><span class="s3">,</span>
+    <span class="s0">metadata</span><span class="s3">={</span>
+        <span class="s4">&quot;hnsw:space&quot;</span><span class="s3">: </span><span class="s4">&quot;cosine&quot;</span><span class="s3">,</span>
+        <span class="s4">&quot;hnsw:construction_ef&quot;</span><span class="s3">: </span><span class="s6">200</span><span class="s3">,</span>
+        <span class="s4">&quot;hnsw:search_ef&quot;</span><span class="s3">: </span><span class="s6">100</span><span class="s3">,</span>
+        <span class="s4">&quot;hnsw:M&quot;</span><span class="s3">: </span><span class="s6">16</span>
+    <span class="s3">}</span>
+<span class="s3">)</span>
+
+<span class="s0">your_ids </span><span class="s3">= [</span><span class="s0">str</span><span class="s3">(</span><span class="s0">uuid</span><span class="s3">.</span><span class="s0">uuid4</span><span class="s3">()) </span><span class="s2">for </span><span class="s0">_ </span><span class="s2">in </span><span class="s0">docs_to_insert</span><span class="s3">]</span>
+<span class="s0">your_texts </span><span class="s3">= [</span><span class="s0">doc</span><span class="s3">[</span><span class="s4">&quot;text&quot;</span><span class="s3">] </span><span class="s2">for </span><span class="s0">doc </span><span class="s2">in </span><span class="s0">docs_to_insert</span><span class="s3">]</span>
+<span class="s0">your_embeddings </span><span class="s3">= [</span><span class="s0">doc</span><span class="s3">[</span><span class="s4">&quot;embedding&quot;</span><span class="s3">] </span><span class="s2">for </span><span class="s0">doc </span><span class="s2">in </span><span class="s0">docs_to_insert</span><span class="s3">]  </span><span class="s1"># ✅ NOT just &quot;3072&quot;!</span>
+
+<span class="s0">collection</span><span class="s3">.</span><span class="s0">add</span><span class="s3">(</span>
+    <span class="s0">ids</span><span class="s3">=</span><span class="s0">your_ids</span><span class="s3">,</span>
+    <span class="s0">documents</span><span class="s3">=</span><span class="s0">your_texts</span><span class="s3">,</span>
+    <span class="s0">embeddings</span><span class="s3">=</span><span class="s0">your_embeddings</span>
+<span class="s3">)</span>
+
+<span class="s0">print</span><span class="s3">(</span><span class="s4">f&quot;✓ Vector search index created with </span><span class="s2">{</span><span class="s0">collection</span><span class="s3">.</span><span class="s0">count</span><span class="s3">()</span><span class="s2">} </span><span class="s4">documents&quot;</span><span class="s3">)</span><hr class="ls0"><span class="s0">#%% 
+results </span><span class="s3">= </span><span class="s0">collection</span><span class="s3">.</span><span class="s0">get</span><span class="s3">(</span>
+    <span class="s0">limit</span><span class="s3">=</span><span class="s6">5</span><span class="s3">,</span>
+    <span class="s0">include</span><span class="s3">=[</span><span class="s4">'documents'</span><span class="s3">, </span><span class="s4">'embeddings'</span><span class="s3">] </span><span class="s1"># Explicitly ask for text and embeddings</span>
+<span class="s3">)</span><hr class="ls0"><span class="s0">#%% 
+results</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s2">def </span><span class="s0">get_retrieved_context</span><span class="s3">(</span><span class="s0">query_text</span><span class="s3">):</span>
+    <span class="s1"># 1. Embed the input query text</span>
+    <span class="s0">query_embedding </span><span class="s3">= </span><span class="s0">get_embedding</span><span class="s3">(</span><span class="s0">query_text</span><span class="s3">)</span>
+
+    <span class="s1"># 2. Vector Search ChromaDB</span>
+    <span class="s0">results </span><span class="s3">= </span><span class="s0">collection</span><span class="s3">.</span><span class="s0">query</span><span class="s3">(</span>
+        <span class="s0">query_embeddings</span><span class="s3">=[</span><span class="s0">query_embedding</span><span class="s3">],</span>
+        <span class="s0">n_results</span><span class="s3">=</span><span class="s6">5</span><span class="s3">,</span>
+        <span class="s0">include</span><span class="s3">=[</span><span class="s4">'documents'</span><span class="s3">]</span>
+    <span class="s3">)</span>
+
+    <span class="s0">retrieved_documents </span><span class="s3">= </span><span class="s0">results</span><span class="s3">[</span><span class="s4">'documents'</span><span class="s3">][</span><span class="s6">0</span><span class="s3">]</span>
+    <span class="s0">context_string </span><span class="s3">= </span><span class="s4">&quot;</span><span class="s2">\n</span><span class="s4">---</span><span class="s2">\n</span><span class="s4">&quot;</span><span class="s3">.</span><span class="s0">join</span><span class="s3">(</span><span class="s0">retrieved_documents</span><span class="s3">)</span>
+
+
+    <span class="s2">return </span><span class="s0">context_string</span><hr class="ls0"><span class="s0">#%% 
+</span><span class="s1">#### Phase 3</span>
+
+
+<span class="s2">from </span><span class="s0">openai </span><span class="s2">import </span><span class="s0">OpenAI</span>
+
+<span class="s1"># Define the question</span>
+<span class="s0">query </span><span class="s3">= </span><span class="s4">&quot;“According to the retrieved text, what does Fidelity emphasize about supporting customers?&quot;</span>
+
+<span class="s1"># 1. RETRIEVAL: Get the context string using the corrected function</span>
+<span class="s0">context_string </span><span class="s3">= </span><span class="s0">get_retrieved_context</span><span class="s3">(</span><span class="s0">query</span><span class="s3">)</span>
+
+<span class="s1"># 2. GENERATION: Construct the RAG Prompt</span>
+<span class="s0">rag_prompt </span><span class="s3">= </span><span class="s4">f&quot;&quot;&quot;</span>
+<span class="s4">Use ONLY the provided context to answer the question.</span>
+<span class="s4">If the answer is not in the context, state that explicitly.</span>
+
+<span class="s4">QUESTION: </span><span class="s2">{</span><span class="s0">query</span><span class="s2">}</span>
+
+<span class="s4">CONTEXT:</span>
+<span class="s2">{</span><span class="s0">context_string</span><span class="s2">}</span>
+<span class="s4">&quot;&quot;&quot;</span>
+
+<span class="s1"># 3. LLM API Call (Corrected message format)</span>
+<span class="s0">openai_client </span><span class="s3">= </span><span class="s0">OpenAI</span><span class="s3">()</span>
+<span class="s0">model_name </span><span class="s3">= </span><span class="s4">&quot;gpt-4o&quot;</span>
+
+<span class="s0">completion </span><span class="s3">= </span><span class="s0">openai_client</span><span class="s3">.</span><span class="s0">chat</span><span class="s3">.</span><span class="s0">completions</span><span class="s3">.</span><span class="s0">create</span><span class="s3">(</span>
+    <span class="s0">model</span><span class="s3">=</span><span class="s0">model_name</span><span class="s3">,</span>
+    <span class="s0">messages</span><span class="s3">=[</span>
+
+        <span class="s1"># Fix 2: User message contains the entire RAG prompt</span>
+        <span class="s3">{</span><span class="s4">&quot;role&quot;</span><span class="s3">: </span><span class="s4">&quot;user&quot;</span><span class="s3">, </span><span class="s4">&quot;content&quot;</span><span class="s3">: </span><span class="s0">rag_prompt</span><span class="s3">}</span>
+    <span class="s3">]</span>
+<span class="s3">)</span>
+
+<span class="s1"># Output the final answer</span>
+<span class="s0">final_answer </span><span class="s3">= </span><span class="s0">completion</span><span class="s3">.</span><span class="s0">choices</span><span class="s3">[</span><span class="s6">0</span><span class="s3">].</span><span class="s0">message</span><span class="s3">.</span><span class="s0">content</span>
+<span class="s0">print</span><span class="s3">(</span><span class="s4">&quot;</span><span class="s2">\n</span><span class="s4">--- LLM Final Answer ---&quot;</span><span class="s3">)</span>
+<span class="s0">print</span><span class="s3">(</span><span class="s0">final_answer</span><span class="s3">)</span></pre>
+</body>
+</html>
